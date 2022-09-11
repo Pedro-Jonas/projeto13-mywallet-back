@@ -3,6 +3,7 @@ import cors from 'cors';
 import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
 import joi from 'joi';
+import dayjs from 'dayjs';
 import bcrypt from 'bcrypt';
 import {v4 as uuid} from 'uuid'
 
@@ -26,6 +27,12 @@ const signupSchema = joi.object({
 const signinSchema = joi.object({
     email: joi.string().required().email().min(1),
     password: joi.string().required().min(1),
+});
+
+const registersSchema = joi.object({
+    value: joi.string().required().min(1),
+    description: joi.string().required().min(1),
+    type: joi.string().valid("Entrance", "Exit").required().min(1)
 });
 
 server.post('/sign-up', async (req, res)=>{
@@ -52,7 +59,7 @@ server.post('/sign-up', async (req, res)=>{
     };
 });
 
-server.post('/sign-in', async(req,res)=>{
+server.post('/sign-in', async (req,res)=>{
     const {email, password} = req.body;
     const validation = signinSchema.validate({email, password});
     if (validation.error){
@@ -69,8 +76,8 @@ server.post('/sign-in', async(req,res)=>{
             await db.collection("sessions").insertOne({
                 userId: user._id,
                 token
-            })
-            return res.send(token);
+            });
+            return res.send({token, name: user.name});
         } else {
             return res.sendStatus(422).send("password invalid");
         };
@@ -78,5 +85,38 @@ server.post('/sign-in', async(req,res)=>{
         res.sendStatus(422);
     };
 });
+
+server.post('/registers', async (req, res)=>{
+    const entrance = req.body;
+    const {authorization} = req.headers;
+    const token  = authorization?.replace('Bearer ', '');
+
+    const validation = registersSchema.validate(entrance);
+    if (validation.error){
+        res.status(422).send("error");
+        return;
+    };
+
+    if (!token){
+        return res.sendStatus(401);
+    };
+
+    try{
+        const session = await db.collection("sessions").findOne({ token });
+        if (!session){
+            return res.sendStatus(401)
+        };
+        console.log(token)
+        const register = await db.collection("registers").insertOne({
+            ...entrance,
+            date: dayjs().format("DD/MM"),
+            userId: session.userId
+        });
+        res.sendStatus(201);
+    } catch {
+        res.sendStatus(422);
+    };
+});
+
 
 server.listen(5000);
