@@ -87,11 +87,11 @@ server.post('/sign-in', async (req,res)=>{
 });
 
 server.post('/registers', async (req, res)=>{
-    const entrance = req.body;
+    const movimentation = req.body;
     const {authorization} = req.headers;
     const token  = authorization?.replace('Bearer ', '');
 
-    const validation = registersSchema.validate(entrance);
+    const validation = registersSchema.validate(movimentation);
     if (validation.error){
         res.status(422).send("error");
         return;
@@ -106,9 +106,8 @@ server.post('/registers', async (req, res)=>{
         if (!session){
             return res.sendStatus(401)
         };
-        console.log(token)
         const register = await db.collection("registers").insertOne({
-            ...entrance,
+            ...movimentation,
             date: dayjs().format("DD/MM"),
             userId: session.userId
         });
@@ -118,5 +117,25 @@ server.post('/registers', async (req, res)=>{
     };
 });
 
+server.get('/registers', async (req, res)=>{
+    const {authorization} = req.headers;
+    const token  = authorization?.replace('Bearer ', '');
+
+    if (!token){
+        return res.sendStatus(401);
+    };
+
+    try{
+        const session = await db.collection("sessions").findOne({ token });
+        if (!session){
+            return res.sendStatus(401)
+        };
+        const registers = await db.collection("registers").find({userId: session.userId}).toArray();
+
+        res.send(registers).status(200);
+    } catch {
+        res.sendStatus(422);
+    };
+});
 
 server.listen(5000);
