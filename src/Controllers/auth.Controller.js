@@ -14,7 +14,7 @@ const signinSchema = joi.object({
     password: joi.string().required().min(1),
 });
 
-async function postSingup (req, res) {
+async function postSignup (req, res) {
     const user = req.body;
     const validation = signupSchema.validate(user);
     if (validation.error){
@@ -38,7 +38,7 @@ async function postSingup (req, res) {
     };
 };
 
-async function postSingin (req,res) {
+async function postSignin (req,res) {
     const {email, password} = req.body;
     const validation = signinSchema.validate({email, password});
     if (validation.error){
@@ -65,4 +65,4 @@ async function postSingin (req,res) {
     };
 };
 
-export { postSingup, postSingin };
+export { postSignup, postSignin };

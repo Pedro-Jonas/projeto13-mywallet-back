@@ -10,17 +10,12 @@ const registersSchema = joi.object({
 
 async function postRegisters (req, res) {
     const movimentation = req.body;
-    const {authorization} = req.headers;
-    const token  = authorization?.replace('Bearer ', '');
-
+    const token = res.locals.token;
+    
     const validation = registersSchema.validate(movimentation);
     if (validation.error){
         res.status(422).send("error");
         return;
-    };
-
-    if (!token){
-        return res.sendStatus(401);
     };
 
     try{
@@ -40,12 +35,7 @@ async function postRegisters (req, res) {
 };
 
 async function getRegisters (req, res) {
-    const {authorization} = req.headers;
-    const token  = authorization?.replace('Bearer ', '');
-
-    if (!token){
-        return res.sendStatus(401);
-    };
+    const token = res.locals.token;
 
     try{
         const session = await db.collection("sessions").findOne({ token });

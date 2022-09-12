@@ -1,19 +1,14 @@
 import express, { json } from 'express';
 import cors from 'cors';
 
-import { postSingup, postSingin } from './Controllers/authController.js';
-import { postRegisters, getRegisters } from './Controllers/registersController.js';
+import registersRouter from './routes/registers.Routes.js';
+import authRouter from './routes/auth.Routes.js';
 
 const server = express();
 server.use(cors());
 server.use(json());
 
-server.post('/sign-up', postSingup);
-
-server.post('/sign-in', postSingin);
-
-server.post('/registers', postRegisters);
-
-server.get('/registers', getRegisters);
+server.use(authRouter);
+server.use(registersRouter);
 
 server.listen(5000);
