@@ -1,6 +1,7 @@
 import express, { json } from 'express';
 import cors from 'cors';
 
+const port = process.env.PORT || 5000;
 import registersRouter from './routes/registers.Routes.js';
 import authRouter from './routes/auth.Routes.js';
 
@@ -11,4 +12,4 @@ server.use(json());
 server.use(authRouter);
 server.use(registersRouter);
 
-server.listen(5000);
+server.listen(port);
